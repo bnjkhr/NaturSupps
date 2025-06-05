@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/NaturSupps.git/static/css/main.b41fe3b7.css",
+    "main.js": "/NaturSupps.git/static/js/main.dabfd4e4.js",
+    "static/js/453.5878f567.chunk.js": "/NaturSupps.git/static/js/453.5878f567.chunk.js",
+    "index.html": "/NaturSupps.git/index.html",
+    "main.b41fe3b7.css.map": "/NaturSupps.git/static/css/main.b41fe3b7.css.map",
+    "main.dabfd4e4.js.map": "/NaturSupps.git/static/js/main.dabfd4e4.js.map",
+    "453.5878f567.chunk.js.map": "/NaturSupps.git/static/js/453.5878f567.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.b41fe3b7.css",
+    "static/js/main.dabfd4e4.js"
+  ]
+}
