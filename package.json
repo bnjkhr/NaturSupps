@@ -2,7 +2,7 @@
   "name": "natursupps-app",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://bnjkhr.github.io/NaturSupps.git",
+  "homepage": "https://bnjkhr.github.io/NaturSupps",
   "dependencies": {
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
