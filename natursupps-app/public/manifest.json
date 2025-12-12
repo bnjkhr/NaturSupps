@@ -1,6 +1,7 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "NaturSupps",
+  "name": "NaturSupps - Natürliche Alternativen zu Supplements",
+  "description": "Finde natürliche Lebensmittel-Alternativen zu deinen Nahrungsergänzungsmitteln. Mit Kostenvergleich, Rezepten und Saisonkalender.",
   "icons": [
     {
       "src": "favicon.ico",
@@ -10,16 +11,24 @@
     {
       "src": "logo192.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "192x192",
+      "purpose": "any maskable"
     },
     {
       "src": "logo512.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "512x512",
+      "purpose": "any maskable"
     }
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "orientation": "portrait-primary",
+  "theme_color": "#22c55e",
+  "background_color": "#f0fdf4",
+  "categories": ["health", "food", "lifestyle"],
+  "lang": "de-DE",
+  "dir": "ltr",
+  "scope": "/",
+  "prefer_related_applications": false
 }
