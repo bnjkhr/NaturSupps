@@ -14,6 +14,7 @@ export { default as ExportPanel } from './ExportPanel';
 export { default as Footer } from './Footer';
 export { default as AuthModal } from './AuthModal';
 export { default as UserMenu } from './UserMenu';
+export { default as PasswordChangeModal } from './PasswordChangeModal';
 
 // UI-Komponenten Re-Export
 export * from './ui';

@@ -1,11 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { LogOut, ChevronDown, Cloud, CloudOff } from 'lucide-react';
+import { LogOut, ChevronDown, Cloud, CloudOff, Key } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 /**
  * User-Menü mit Avatar und Dropdown
  */
-const UserMenu = () => {
+const UserMenu = ({ onChangePassword }) => {
   const { user, logout, isAuthenticated, isConfigured } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
@@ -46,26 +46,36 @@ const UserMenu = () => {
     await logout();
   };
 
+  const handleChangePassword = () => {
+    setIsOpen(false);
+    if (onChangePassword) {
+      onChangePassword();
+    }
+  };
+
+  // Prüfen ob User mit Passwort angemeldet ist (nicht Google)
+  const isPasswordUser = user?.providerData?.some(p => p.providerId === 'password');
+
   return (
     <div className="relative" ref={menuRef}>
       {/* Avatar Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 p-1.5 rounded-full hover:bg-white/10 transition-colors"
+        className="flex items-center gap-2 p-1.5 rounded-full hover:bg-gray-100 transition-colors"
       >
         {/* Avatar */}
         {user?.photoURL ? (
           <img
             src={user.photoURL}
             alt="Avatar"
-            className="w-8 h-8 rounded-full border-2 border-white/50"
+            className="w-9 h-9 rounded-full border-2 border-green-500"
           />
         ) : (
-          <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white text-sm font-medium border-2 border-white/50">
+          <div className="w-9 h-9 rounded-full bg-green-500 flex items-center justify-center text-white text-sm font-medium">
             {getInitials()}
           </div>
         )}
-        <ChevronDown className={`h-4 w-4 text-white/70 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`h-4 w-4 text-gray-500 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {/* Dropdown Menu */}
@@ -114,7 +124,18 @@ const UserMenu = () => {
           </div>
 
           {/* Menu Items */}
-          <div className="p-2">
+          <div className="p-2 space-y-1">
+            {/* Passwort ändern - nur für E-Mail/Passwort User */}
+            {isPasswordUser && (
+              <button
+                onClick={handleChangePassword}
+                className="w-full flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <Key className="h-4 w-4" />
+                <span>Passwort ändern</span>
+              </button>
+            )}
+
             <button
               onClick={handleLogout}
               className="w-full flex items-center gap-3 px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"

@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
-import { Leaf, LogIn, Cloud } from 'lucide-react';
+import { Leaf, LogIn } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import AuthModal from './AuthModal';
 import UserMenu from './UserMenu';
+import PasswordChangeModal from './PasswordChangeModal';
 
 const Header = () => {
-  const { isAuthenticated, loading, isSyncing } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
 
   return (
     <>
@@ -14,17 +16,9 @@ const Header = () => {
         {/* Top Bar mit Login */}
         <div className="flex justify-end mb-4">
           {loading ? (
-            <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse" />
+            <div className="w-9 h-9 rounded-full bg-gray-200 animate-pulse" />
           ) : isAuthenticated ? (
-            <div className="flex items-center gap-2">
-              {isSyncing && (
-                <div className="flex items-center gap-1 text-xs text-gray-500">
-                  <Cloud className="h-3 w-3 animate-pulse" />
-                  <span>Speichern...</span>
-                </div>
-              )}
-              <UserMenu />
-            </div>
+            <UserMenu onChangePassword={() => setShowPasswordModal(true)} />
           ) : (
             <button
               onClick={() => setShowAuthModal(true)}
@@ -52,6 +46,12 @@ const Header = () => {
       <AuthModal
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
+      />
+
+      {/* Password Change Modal */}
+      <PasswordChangeModal
+        isOpen={showPasswordModal}
+        onClose={() => setShowPasswordModal(false)}
       />
     </>
   );

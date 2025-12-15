@@ -6,7 +6,10 @@ import {
   GoogleAuthProvider,
   signOut,
   onAuthStateChanged,
-  updateProfile
+  updateProfile,
+  updatePassword,
+  EmailAuthProvider,
+  reauthenticateWithCredential
 } from 'firebase/auth';
 import { auth, isConfigured } from '../firebase/config';
 import { createUserProfile, loadUserData, saveUserData } from '../firebase/firestore';
@@ -27,7 +30,8 @@ const getErrorMessage = (errorCode) => {
     'auth/invalid-credential': 'Ungültige Anmeldedaten.',
     'auth/too-many-requests': 'Zu viele Anmeldeversuche. Bitte versuche es später erneut.',
     'auth/popup-closed-by-user': 'Anmeldung abgebrochen.',
-    'auth/network-request-failed': 'Netzwerkfehler. Bitte überprüfe deine Internetverbindung.'
+    'auth/network-request-failed': 'Netzwerkfehler. Bitte überprüfe deine Internetverbindung.',
+    'auth/requires-recent-login': 'Bitte melde dich erneut an, um dein Passwort zu ändern.'
   };
 
   return errorMessages[errorCode] || 'Ein Fehler ist aufgetreten. Bitte versuche es erneut.';
@@ -221,6 +225,31 @@ export const AuthProvider = ({ children }) => {
     }
   }, [user]);
 
+  // Passwort ändern
+  const changePassword = useCallback(async (currentPassword, newPassword) => {
+    if (!isConfigured || !auth || !user) {
+      setError('Nicht angemeldet.');
+      return { success: false, error: 'Nicht angemeldet.' };
+    }
+
+    try {
+      setError(null);
+
+      // Re-authenticate user first
+      const credential = EmailAuthProvider.credential(user.email, currentPassword);
+      await reauthenticateWithCredential(user, credential);
+
+      // Update password
+      await updatePassword(user, newPassword);
+
+      return { success: true };
+    } catch (err) {
+      const message = getErrorMessage(err.code);
+      setError(message);
+      return { success: false, error: message };
+    }
+  }, [user]);
+
   const value = {
     // User State
     user,
@@ -235,6 +264,7 @@ export const AuthProvider = ({ children }) => {
     login,
     loginWithGoogle,
     logout,
+    changePassword,
     clearError,
     refreshUserData
   };
