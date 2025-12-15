@@ -12,6 +12,8 @@ export { default as SeasonHighlight } from './SeasonHighlight';
 export { default as NutrientProgress } from './NutrientProgress';
 export { default as ExportPanel } from './ExportPanel';
 export { default as Footer } from './Footer';
+export { default as AuthModal } from './AuthModal';
+export { default as UserMenu } from './UserMenu';
 
 // UI-Komponenten Re-Export
 export * from './ui';

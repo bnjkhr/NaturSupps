@@ -1,4 +1,6 @@
 import React from 'react';
+import { AuthProvider } from './contexts/AuthContext';
+import { useAuth } from './contexts/AuthContext';
 import {
   Header,
   DisclaimerBanner,
@@ -14,7 +16,10 @@ import {
 } from './components';
 import { useSupplements } from './hooks/useSupplements';
 
-const App = () => {
+// Innere App-Komponente (hat Zugriff auf AuthContext)
+const AppContent = () => {
+  const { user } = useAuth();
+
   const {
     // State
     supplements,
@@ -43,7 +48,7 @@ const App = () => {
     removeSupplement,
     analyzeSupplements,
     generateShoppingList
-  } = useSupplements();
+  } = useSupplements(user);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 p-4 font-sans">
@@ -102,6 +107,15 @@ const App = () => {
         <Footer />
       </div>
     </div>
+  );
+};
+
+// Haupt-App-Komponente mit AuthProvider
+const App = () => {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 };
 

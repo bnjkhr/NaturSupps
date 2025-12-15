@@ -1,22 +1,26 @@
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { useLocalStorage } from './useLocalStorage';
 import { supplementDatabase, getSupplement, getDisplayName } from '../data/supplements';
 import { getCostData } from '../data/costs';
 import { getDefaultFilters, filterNaturalSources } from '../data/filters';
 import { normalizeKey, generateId, uniqueBy } from '../utils/helpers';
+import { saveSupplements, saveFilters, subscribeToUserData } from '../firebase/firestore';
+import { isConfigured } from '../firebase/config';
 
 /**
  * Custom Hook für die gesamte Supplement-Logik
  * Verwaltet State, Analyse, Filter und Berechnungen
+ * Synchronisiert mit Firestore wenn User eingeloggt ist
  */
-export const useSupplements = () => {
-  // Persistierte Daten (bleiben nach Reload erhalten)
+export const useSupplements = (user = null) => {
+  // Persistierte Daten (localStorage als Fallback)
   const [savedSupplements, setSavedSupplements] = useLocalStorage('natursupps-supplements', []);
   const [savedFilters, setSavedFilters] = useLocalStorage('natursupps-filters', getDefaultFilters());
 
-  // Supplement-State (automatisch aus localStorage geladen)
+  // Supplement-State
   const [supplements, setSupplements] = useState([]);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   // Filter-State
   const [filters, setFilters] = useState(getDefaultFilters());
@@ -31,32 +35,94 @@ export const useSupplements = () => {
   const [costComparison, setCostComparison] = useState([]);
   const [showShoppingList, setShowShoppingList] = useState(false);
 
-  // Beim Start: Gespeicherte Daten laden
+  // Ref um Doppel-Speicherung zu verhindern
+  const isLoadingFromFirestore = useRef(false);
+  const unsubscribeRef = useRef(null);
+
+  // Firestore-Subscription aufsetzen wenn User eingeloggt
   useEffect(() => {
-    if (!isInitialized) {
-      if (savedSupplements.length > 0) {
-        setSupplements(savedSupplements);
-      }
-      if (savedFilters) {
-        setFilters(savedFilters);
-      }
-      setIsInitialized(true);
+    // Cleanup vorherige Subscription
+    if (unsubscribeRef.current) {
+      unsubscribeRef.current();
+      unsubscribeRef.current = null;
     }
-  }, [savedSupplements, savedFilters, isInitialized]);
+
+    if (user && isConfigured) {
+      // Echtzeit-Updates von Firestore abonnieren
+      unsubscribeRef.current = subscribeToUserData(user.uid, (data) => {
+        if (data) {
+          isLoadingFromFirestore.current = true;
+
+          if (data.supplements) {
+            setSupplements(data.supplements);
+          }
+          if (data.filters) {
+            setFilters(data.filters);
+          }
+
+          setIsInitialized(true);
+          isLoadingFromFirestore.current = false;
+        }
+      });
+    } else {
+      // Nicht eingeloggt: localStorage verwenden
+      if (!isInitialized) {
+        if (savedSupplements.length > 0) {
+          setSupplements(savedSupplements);
+        }
+        if (savedFilters) {
+          setFilters(savedFilters);
+        }
+        setIsInitialized(true);
+      }
+    }
+
+    return () => {
+      if (unsubscribeRef.current) {
+        unsubscribeRef.current();
+      }
+    };
+  }, [user, savedSupplements, savedFilters, isInitialized]);
+
+  // Supplements speichern (Firestore oder localStorage)
+  const persistSupplements = useCallback(async (newSupplements) => {
+    if (isLoadingFromFirestore.current) return;
+
+    if (user && isConfigured) {
+      setIsSyncing(true);
+      await saveSupplements(user.uid, newSupplements);
+      setIsSyncing(false);
+    } else {
+      setSavedSupplements(newSupplements);
+    }
+  }, [user, setSavedSupplements]);
+
+  // Filter speichern (Firestore oder localStorage)
+  const persistFilters = useCallback(async (newFilters) => {
+    if (isLoadingFromFirestore.current) return;
+
+    if (user && isConfigured) {
+      setIsSyncing(true);
+      await saveFilters(user.uid, newFilters);
+      setIsSyncing(false);
+    } else {
+      setSavedFilters(newFilters);
+    }
+  }, [user, setSavedFilters]);
 
   // Supplements automatisch speichern wenn sie sich ändern
   useEffect(() => {
-    if (isInitialized) {
-      setSavedSupplements(supplements);
+    if (isInitialized && !isLoadingFromFirestore.current) {
+      persistSupplements(supplements);
     }
-  }, [supplements, isInitialized, setSavedSupplements]);
+  }, [supplements, isInitialized, persistSupplements]);
 
   // Filter automatisch speichern
   useEffect(() => {
-    if (isInitialized) {
-      setSavedFilters(filters);
+    if (isInitialized && !isLoadingFromFirestore.current) {
+      persistFilters(filters);
     }
-  }, [filters, isInitialized, setSavedFilters]);
+  }, [filters, isInitialized, persistFilters]);
 
   // Anzahl aktiver Filter
   const activeFilterCount = useMemo(() => {
@@ -232,7 +298,7 @@ export const useSupplements = () => {
   }, []);
 
   // Prüfen ob gespeicherte Supplements vorhanden sind
-  const hasSavedSupplements = savedSupplements.length > 0;
+  const hasSavedSupplements = savedSupplements.length > 0 || supplements.length > 0;
 
   return {
     // State
@@ -247,6 +313,7 @@ export const useSupplements = () => {
     totalMonthlySavings,
     isInitialized,
     hasSavedSupplements,
+    isSyncing,
 
     // Filter State
     filters,
