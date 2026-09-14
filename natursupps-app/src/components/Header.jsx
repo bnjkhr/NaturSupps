@@ -27,7 +27,7 @@ const Header = () => {
               <a
                 key={link.href}
                 href={link.href}
-                target="_blank"
+
                 rel="noopener noreferrer"
                 className="text-xs sm:text-sm text-gray-600 hover:text-green-600 transition-colors px-2 py-1"
               >
