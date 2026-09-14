@@ -37,7 +37,7 @@ const ExportPanel = ({ shoppingList, costComparison }) => {
   };
 
   const handleWhatsApp = () => {
-    window.open(getWhatsAppShareUrl(formattedText), '_blank');
+    window.location.assign(getWhatsAppShareUrl(formattedText));
   };
 
   const handleEmail = () => {
